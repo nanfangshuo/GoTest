@@ -12,12 +12,12 @@ type LogoutResponse struct {
 
 func Logout() error {
 	var response LogoutResponse
-	err := HttpRequest.SendPostRequestWithToken("/admin/logout", nil, response)
+	err, responseStatus := HttpRequest.SendPostRequestWithToken("/admin/logout", nil, response)
 	if err != nil {
 		fmt.Println("注销请求发送错误：", err)
 		return err
 	}
-	if response.Code == 200 {
+	if responseStatus == 200 {
 		fmt.Println("成功注销")
 		return nil
 	} else {

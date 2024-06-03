@@ -20,7 +20,7 @@ type LoginResponse struct {
 	Data    struct {
 		Mode               string  `json:"mode"`
 		DefaultTemperature float64 `json:"defaultTemp"`
-		WindSpeed          int     `json:"refreshRate"`
+		refreshRate        int     `json:"refreshRate"`
 		Token              string  `json:"token"`
 	} `json:"data"`
 }
@@ -44,18 +44,19 @@ func Login() *Room.Room {
 		}
 		var loginResp LoginResponse
 
-		err := HttpRequest.SendPostRequestWithoutToken("/auth/login", data, &loginResp)
+		err, responseStatus := HttpRequest.SendPostRequestWithoutToken("/auth/login", data, &loginResp)
 		if err != nil {
 			fmt.Println("发送登录请求错误：", err)
 			continue
 		}
 
-		if loginResp.Code == 200 {
-			room = Room.NewRoom(roomId, loginResp.Data.Mode, loginResp.Data.DefaultTemperature, loginResp.Data.WindSpeed)
+		if responseStatus == 200 {
+			room = Room.NewRoom(roomId, loginResp.Data.Mode, loginResp.Data.DefaultTemperature)
 			HttpRequest.Token = loginResp.Data.Token
 			fmt.Println("登录成功")
 			break
 		} else {
+			fmt.Println("响应码：", responseStatus)
 			fmt.Println("登录失败：", loginResp.Message)
 		}
 	}

@@ -18,4 +18,11 @@ func main() {
 	fmt.Println("空调模式：", room.WorkStatus)
 	fmt.Println("缺省温度：", room.TargetTemperature)
 	fmt.Println("当前温度：", room.Temperature)
+
+	fmt.Println("Press 1 to Log OUT!")
+	var x int
+	fmt.Scanln(&x)
+	if x == 1 {
+		Authentication.Logout()
+	}
 }

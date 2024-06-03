@@ -3,7 +3,6 @@ package Authentication
 import (
 	"GoTest/SendRequest"
 	"fmt"
-	"net/http"
 )
 
 type LogoutResponse struct {
@@ -12,20 +11,17 @@ type LogoutResponse struct {
 }
 
 func Logout(token string) error {
-	req, err := http.NewRequest("POST", "/admin/logout", nil)
+	var response LogoutResponse
+	err := SendRequest.SendPostRequestWithToken("/admin/logout", nil, response)
 	if err != nil {
-		fmt.Println("创建请求失败：", err)
+		fmt.Println("注销请求发送错误：", err)
 		return err
 	}
-
-	req.Header.Set("Authorization", "Bearer "+token)
-
-	err = SendRequest.SendPostRequestWithReq(req, nil, nil)
-	if err != nil {
-		fmt.Println("注销失败：", err)
-		return err
+	if response.Code == 200 {
+		fmt.Println("成功注销")
+		return nil
+	} else {
+		fmt.Println("注销失败：", response.Message)
 	}
-
-	fmt.Println("成功注销")
 	return nil
 }

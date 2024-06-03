@@ -7,7 +7,6 @@ import (
 	"GoTest/Room"
 	"GoTest/SendRequest"
 	"fmt"
-	"net/http"
 )
 
 type LoginRequestBody struct {
@@ -20,8 +19,8 @@ type LoginResponse struct {
 	Message string `json:"message"`
 	Data    struct {
 		Mode               string  `json:"mode"`
-		defaultTemperature float64 `json:"defaultTemp"`
-		windSpeed          int     `json:"refreshRate"`
+		DefaultTemperature float64 `json:"defaultTemp"`
+		WindSpeed          int     `json:"refreshRate"`
 		Token              string  `json:"token"`
 	} `json:"data"`
 }
@@ -45,19 +44,16 @@ func Login() *Room.Room {
 		}
 		var loginResp LoginResponse
 
-		req, err := http.NewRequest("POST", SendRequest.BaseURL+"/auth/login", nil)
+		err := SendRequest.SendPostRequestWithoutToken("/auth/login", data, &loginResp)
 		if err != nil {
-			fmt.Println("构造请求错误：", err)
-			continue
-		}
-		err = SendRequest.SendPostRequestWithReq(req, data, &loginResp)
-		if err != nil {
-			fmt.Println("登录错误：", err)
+			fmt.Println("发送登录请求错误：", err)
 			continue
 		}
 
 		if loginResp.Code == 200 {
-			room = Room.NewRoom(roomId, loginResp.Data.Token, loginResp.Data.Mode, loginResp.Data.defaultTemperature, loginResp.Data.windSpeed)
+			room = Room.NewRoom(roomId, loginResp.Data.Mode, loginResp.Data.DefaultTemperature, loginResp.Data.WindSpeed)
+			SendRequest.Token = loginResp.Data.Token
+			fmt.Println("登录成功")
 			break
 		} else {
 			fmt.Println("登录失败：", loginResp.Message)

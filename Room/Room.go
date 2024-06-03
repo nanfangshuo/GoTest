@@ -13,15 +13,14 @@ type Room struct {
 	WindSpeed int
 }
 
-func NewRoom(roomId string, token string, mode string, targetTemperature float64, wind int) *Room {
+func NewRoom(roomId string, mode string, targetTemperature float64, wind int) *Room {
 	//TODO:新建房间时检查温度是否需要发起请求
-
 	return &Room{
 		RoomId:            roomId,
 		WorkStatus:        mode,
 		Temperature:       20, // TODO:可能要改为从服务器获取当前温度，这里先写死
 		TargetTemperature: targetTemperature,
-		WindSpeed:         1,
+		WindSpeed:         wind,
 	}
 }
 

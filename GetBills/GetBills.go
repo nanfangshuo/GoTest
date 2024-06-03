@@ -37,7 +37,7 @@ func getBills(period string) error {
 	}
 
 	var response getBillsResponse
-	err, rspStatus := HttpRequest.SendPostRequestWithToken("/room/bills", requestBody, &response)
+	err, rspStatus := HttpRequest.SendPostRequestWithToken("/room/report", requestBody, &response)
 	if err != nil {
 		fmt.Println("获取账单请求发送错误：", err)
 		return err

@@ -23,7 +23,7 @@ func StartWind(targetTemerature float64, windSpeed string) error {
 		TargetTemp: targetTemerature,
 	}
 	var response StartWindResponse
-	err, responseStatus := HttpRequest.SendPostRequestWithToken("/room/startWind", requestBody, &response)
+	err, responseStatus := HttpRequest.SendPostRequestWithToken("/room/blowing/start", requestBody, &response)
 	if err != nil {
 		fmt.Println("送风请求发送错误：", err)
 		return err

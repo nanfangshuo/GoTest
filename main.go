@@ -1,10 +1,7 @@
 package main
 
-import "fmt"
-
 func main() {
-	var roomId, mode, temperature = Login()
-	fmt.Println("登录成功，当前房间号为" + roomId)
-	fmt.Println("模式为：" + mode)
-	fmt.Println("温度为：" + string(temperature))
+	//登录，获得房间号、空调模式、缺省温度、房间当前温度
+	//使用登录后的信息，创建房间对象，创建时，需要检查目标温度和当前温度的插值，小于一将模式设为standby风速0，大于一将模式设为warm/cold，发送温控请求
+
 }

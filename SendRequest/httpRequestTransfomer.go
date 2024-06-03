@@ -1,25 +1,25 @@
 // Description: 用于发送HTTP请求的工具函数
-package main
+package SendRequest
 
 import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 )
 
-const BaseURL = "http://localhost:8080"
+const BaseURL = "http://82.156.104.168:80"
 
-func sendPostRequest(api string, requestBody interface{}, responseBody interface{}) error {
+// SendPostRequestWithReq 用于发送已构造HTTP请求req的工具函数
+// 该函数接受一个http.Request类型的参数req，一个请求体requestBody，一个响应体responseBody
+func SendPostRequestWithReq(req *http.Request, requestBody interface{}, responseBody interface{}) error {
 	jsonData, err := json.Marshal(requestBody)
 	if err != nil {
 		return fmt.Errorf("将请求体转换为JSON错误：%v", err)
 	}
-	var url = BaseURL + api
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
-	if err != nil {
-		return fmt.Errorf("创建请求错误：%v", err)
-	}
+
+	req.Body = io.NopCloser(bytes.NewBuffer(jsonData))
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := http.DefaultClient.Do(req)

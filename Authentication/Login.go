@@ -4,8 +4,8 @@
 package Authentication
 
 import (
+	"GoTest/HttpRequest"
 	"GoTest/Room"
-	"GoTest/SendRequest"
 	"fmt"
 )
 
@@ -32,7 +32,7 @@ func Login() *Room.Room {
 	var room *Room.Room
 	var roomId string
 	var identity string
-	for true {
+	for {
 		fmt.Println("请输入roomId：")
 		fmt.Scanln(&roomId)
 		fmt.Println("请输入identity：")
@@ -44,7 +44,7 @@ func Login() *Room.Room {
 		}
 		var loginResp LoginResponse
 
-		err := SendRequest.SendPostRequestWithoutToken("/auth/login", data, &loginResp)
+		err := HttpRequest.SendPostRequestWithoutToken("/auth/login", data, &loginResp)
 		if err != nil {
 			fmt.Println("发送登录请求错误：", err)
 			continue
@@ -52,7 +52,7 @@ func Login() *Room.Room {
 
 		if loginResp.Code == 200 {
 			room = Room.NewRoom(roomId, loginResp.Data.Mode, loginResp.Data.DefaultTemperature, loginResp.Data.WindSpeed)
-			SendRequest.Token = loginResp.Data.Token
+			HttpRequest.Token = loginResp.Data.Token
 			fmt.Println("登录成功")
 			break
 		} else {

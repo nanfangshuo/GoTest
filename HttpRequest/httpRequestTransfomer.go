@@ -1,5 +1,5 @@
 // Description: 用于发送HTTP请求的工具函数
-package SendRequest
+package HttpRequest
 
 import (
 	"bytes"

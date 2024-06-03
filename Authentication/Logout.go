@@ -1,7 +1,7 @@
 package Authentication
 
 import (
-	"GoTest/SendRequest"
+	"GoTest/HttpRequest"
 	"fmt"
 )
 
@@ -10,9 +10,9 @@ type LogoutResponse struct {
 	Message string `json:"message"`
 }
 
-func Logout(token string) error {
+func Logout() error {
 	var response LogoutResponse
-	err := SendRequest.SendPostRequestWithToken("/admin/logout", nil, response)
+	err := HttpRequest.SendPostRequestWithToken("/admin/logout", nil, response)
 	if err != nil {
 		fmt.Println("注销请求发送错误：", err)
 		return err

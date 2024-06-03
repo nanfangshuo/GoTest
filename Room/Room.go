@@ -23,13 +23,3 @@ func NewRoom(roomId string, mode string, targetTemperature float64, wind int) *R
 		WindSpeed:         wind,
 	}
 }
-
-//// 每次room的数据变更（WorkStatus/Temperature/targetTemperature/WindSpeed）时向主控机汇报自身情况
-//func (room *Room) UpdateRoomToMaster() {
-//	err := SendRequest.sendPostRequest("/slave/condition", room, nil)
-//	if err != nil {
-//		fmt.Println("向主控机汇报房间情况失败：", err)
-//		return
-//	}
-//	fmt.Println("成功向主控机汇报房间情况")
-//}

@@ -53,12 +53,13 @@ func Login() *Room.Room {
 		if responseStatus == 200 {
 			room = Room.NewRoom(roomId, loginResp.Data.Mode, loginResp.Data.DefaultTemperature)
 			HttpRequest.Token = loginResp.Data.Token
-			fmt.Println("登录成功")
 			break
 		} else {
 			fmt.Println("响应码：", responseStatus)
 			fmt.Println("登录失败：", loginResp.Message)
 		}
 	}
+	fmt.Println("登录成功")
+	Room.CheckTemperature(room)
 	return room
 }

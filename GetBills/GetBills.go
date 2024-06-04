@@ -30,7 +30,7 @@ type Request struct {
 	Cost             float64   `json:"cost"`
 }
 
-func getBills(period string) error {
+func GetBills(period string) error {
 	//把period填入requestBody
 	requestBody := getBillsRequestBody{
 		Period: period,

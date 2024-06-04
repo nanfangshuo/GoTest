@@ -1,6 +1,10 @@
 package Room
 
-import "GoTest/WindRequest"
+import (
+	"GoTest/WindRequest"
+	"fmt"
+	"time"
+)
 
 type Room struct {
 	// 房间号
@@ -26,6 +30,7 @@ func NewRoom(roomId string, mode string, targetTemperature float64) *Room {
 		WindSpeed:         "low",
 	}
 }
+
 func CheckTemperature(room *Room) {
 	//检查温度是否需要发起请求
 	diff := room.Temperature - room.TargetTemperature
@@ -36,5 +41,48 @@ func CheckTemperature(room *Room) {
 		//向服务器请求制冷
 		WindRequest.StartWind(room)
 	}
+}
 
+// 空调工作时的温度变化
+func (room *Room) WorkingTemperatureChange(stop chan bool) {
+	target := room.TargetTemperature
+	var flag float64
+	if room.WorkStatus == "warm" {
+		flag = 1
+	} else {
+		flag = -1
+	}
+	var degreeLevel float64
+	switch room.WindSpeed {
+	case "low":
+		degreeLevel = 0.5 * flag
+		break
+	case "medium":
+		degreeLevel = 1 * flag
+		break
+	case "high":
+		degreeLevel = 1.5
+		break
+	}
+
+	// 温度每秒更新一次，每次变化speed度
+	ticker := time.NewTicker(1 * time.Second)
+	defer ticker.Stop()
+	go func() {
+		for {
+			select {
+			case <-ticker.C:
+				room.Temperature += degreeLevel
+				fmt.Println("当前温度：", room.Temperature)
+				// 检查是否达到目标温度
+				if room.Temperature == target {
+					fmt.Println("已达到目标温度")
+					return
+				}
+			case <-stop:
+				fmt.Println("主动停止温度变化")
+				return
+			}
+		}
+	}()
 }

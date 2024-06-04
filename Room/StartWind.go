@@ -1,8 +1,7 @@
-package WindRequest
+package Room
 
 import (
 	"GoTest/HttpRequest"
-	"GoTest/Room"
 	"fmt"
 	"sync"
 	"time"
@@ -19,7 +18,7 @@ type StartWindResponse struct {
 	Message string `json:"message"`
 }
 
-func StartWind(room *Room.Room) error {
+func StartWind(room *Room) error {
 	//首先，确保上一个请求已暂停（这非常重要！！）
 	StopWind()
 	//发送送风请求

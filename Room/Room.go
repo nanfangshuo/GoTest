@@ -1,7 +1,6 @@
 package Room
 
 import (
-	"GoTest/WindRequest"
 	"fmt"
 	"time"
 )
@@ -36,10 +35,10 @@ func CheckTemperature(room *Room) {
 	diff := room.Temperature - room.TargetTemperature
 	if room.WorkStatus == "warm" && diff < -1 {
 		//向服务器请求加热
-		WindRequest.StartWind(room)
+		StartWind(room)
 	} else if room.WorkStatus == "cold" && diff > 1 {
 		//向服务器请求制冷
-		WindRequest.StartWind(room)
+		StartWind(room)
 	}
 }
 

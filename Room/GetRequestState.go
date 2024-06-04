@@ -1,4 +1,4 @@
-package WindRequest
+package Room
 
 import (
 	"GoTest/HttpRequest"

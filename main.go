@@ -4,7 +4,6 @@ import (
 	"GoTest/Authentication"
 	"GoTest/GetBills"
 	"GoTest/Room"
-	"GoTest/WindRequest"
 	"fmt"
 	"time"
 )
@@ -69,10 +68,10 @@ func main() {
 			fmt.Scanln(&temp)
 			if temp < room.Temperature && room.WorkStatus == "cold" {
 				room.TargetTemperature = temp
-				WindRequest.StartWind(room)
+				Room.StartWind(room)
 			} else if temp > room.Temperature && room.WorkStatus == "warm" {
 				room.TargetTemperature = temp
-				WindRequest.StartWind(room)
+				Room.StartWind(room)
 			} else {
 				fmt.Println("该温度和当前空调工作模式矛盾，设置温度失败！")
 			}
@@ -83,7 +82,7 @@ func main() {
 			fmt.Print("请输入新的风速（low/medium/high）：")
 			fmt.Scanln(&speed)
 			room.WindSpeed = speed
-			WindRequest.StartWind(room)
+			Room.StartWind(room)
 			break
 		}
 	}

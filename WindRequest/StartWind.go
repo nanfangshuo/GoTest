@@ -64,6 +64,7 @@ func StartWind(room *Room.Room) error {
 			StopWind()
 		} else if state0 == "Doing" {
 			//若此时请求状态为Doing，则开始送风；同时监听请求状态，当请求状态为Done时，停止送风
+			var stopChangingTemperature = make(chan bool)
 			go room.WorkingTemperatureChange(stopChangingTemperature)
 			//循环获取请求状态（间隔1秒），当请求状态为Done时：stop <- true，停止送风
 			ticker := time.NewTicker(1 * time.Second)

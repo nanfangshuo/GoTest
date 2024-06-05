@@ -50,7 +50,7 @@ func main() {
 		case 1:
 			//查看房间当前状态
 			fmt.Print("当前温度：", room.Temperature, "°C\n")
-			fmt.Print("目标温度：", room.Temperature, "°C\n")
+			fmt.Print("目标温度：", room.TargetTemperature, "°C\n")
 			fmt.Print("风速：", room.WindSpeed, "\n")
 			fmt.Print("空调工作状态：", room.WorkStatus, "\n")
 			break

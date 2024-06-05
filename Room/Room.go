@@ -36,7 +36,7 @@ func CheckTemperature(room *Room) {
 	if room.WorkStatus == "warm" && diff < -1 {
 		//向服务器请求加热
 		StartWind(room)
-	} else if room.WorkStatus == "cold" && diff > 1 {
+	} else if room.WorkStatus == "cool" && diff > 1 {
 		//向服务器请求制冷
 		StartWind(room)
 	}

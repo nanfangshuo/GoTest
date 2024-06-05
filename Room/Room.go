@@ -75,7 +75,7 @@ func (room *Room) WorkingTemperatureChange(stop chan bool) {
 				fmt.Println("当前温度：", room.Temperature)
 				// 检查是否达到目标温度
 				if room.Temperature == target {
-					fmt.Println("已达到目标温度")
+					fmt.Println("达到目标温度")
 					return
 				}
 			case <-stop:

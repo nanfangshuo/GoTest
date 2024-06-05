@@ -21,7 +21,7 @@ func ReportStatus(status string, temperature float64) error {
 		Temperature: temperature,
 	}
 	var response ReportStatusResponse
-	err, responseStatus := HttpRequest.SendPostRequestWithToken("/room/poll/room_status", requestBody, &response)
+	err, responseStatus := HttpRequest.SendPostRequestWithToken("/room/poll/request", requestBody, &response)
 	if err != nil {
 		fmt.Println("上报状态请求发送错误：", err)
 		return err

@@ -36,7 +36,7 @@ func StartWind(room *Room) error {
 		var requestState string
 		//循环获取请求状态（间隔1秒），当请求状态为Doing或者Done时，停止循环
 		for {
-			err, requestState := GetRequestState()
+			err, requestState = GetRequestState()
 			if err != nil {
 				fmt.Println("获取请求状态时发生错误，结束循环：", err)
 				break
@@ -78,9 +78,6 @@ func StartWind(room *Room) error {
 				err, state0 = GetRequestState()
 				if err != nil {
 					fmt.Println("获取请求状态时发生错误，结束循环：", err)
-					break
-				} else {
-
 					break
 				}
 				time.Sleep(1 * time.Second)

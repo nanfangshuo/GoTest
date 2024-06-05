@@ -3,7 +3,6 @@ package Room
 import (
 	"GoTest/HttpRequest"
 	"fmt"
-	"sync"
 	"time"
 )
 
@@ -34,53 +33,58 @@ func StartWind(room *Room) error {
 	}
 	if responseStatus == 200 {
 		fmt.Println("送风请求成功")
+		var requestState string
 		//循环获取请求状态（间隔1秒），当请求状态为Doing或者Done时，停止循环
-		ticker := time.NewTicker(1 * time.Second)
-		var wg sync.WaitGroup
-		wg.Add(1)
-		result := make(chan string)
-		go func() {
-			defer wg.Done()
-			for range ticker.C {
-				err, requestState := GetRequestState()
-				if err != nil {
-					fmt.Println("获取请求状态时发生错误，结束循环：", err)
-					ticker.Stop()
-					result <- "Error"
-					break
-				} else if requestState == "Pending" {
-					fmt.Println("请求等待执行中")
-				} else {
-					break
-				}
+		for {
+			err, requestState := GetRequestState()
+			if err != nil {
+				fmt.Println("获取请求状态时发生错误，结束循环：", err)
+				break
+			} else if requestState != "Pending" {
+				fmt.Println("请求等待执行中")
+				break
 			}
-		}()
-		wg.Wait()
-		state0 := <-result
-		close(result)
-		//执行完毕上述协程后，再执行以下代码。若此时请求状态为Done，则停止送风
+			time.Sleep(1 * time.Second)
+		}
+		state0 := requestState
+		//获得状态后，再执行以下代码。若此时请求状态为Done，则停止送风
 		if state0 == "Done" {
 			StopWind()
 		} else if state0 == "Doing" {
 			//若此时请求状态为Doing，则开始送风；同时监听请求状态，当请求状态为Done时，停止送风
-			var stopChangingTemperature = make(chan bool)
-			go room.WorkingTemperatureChange(stopChangingTemperature)
-			//循环获取请求状态（间隔1秒），当请求状态为Done时：stop <- true，停止送风
-			ticker := time.NewTicker(1 * time.Second)
-			defer ticker.Stop()
-			for {
-				select {
-				case <-ticker.C:
-					_, requestState := GetRequestState()
-					if requestState == "Done" {
-						stopChangingTemperature <- true
-						return nil
-					}
-				case <-stopChangingTemperature:
-					return nil
-				}
+			target := room.TargetTemperature
+			var flag float64
+			if room.WorkStatus == "Warm" {
+				flag = 1
+			} else {
+				flag = -1
 			}
-			return nil
+			var degreeLevel float64
+			switch room.WindSpeed {
+			case "low":
+				degreeLevel = 0.5 * flag
+				break
+			case "medium":
+				degreeLevel = 1 * flag
+				break
+			case "high":
+				degreeLevel = 1.5
+				break
+			}
+			diff := (target - room.Temperature) * flag
+			//循环获取请求状态（间隔1秒），当请求状态为Done时：stop <- true，停止送风
+			for state0 == "Doing" && diff > 1 {
+				room.Temperature += degreeLevel
+				err, state0 = GetRequestState()
+				if err != nil {
+					fmt.Println("获取请求状态时发生错误，结束循环：", err)
+					break
+				} else {
+
+					break
+				}
+				time.Sleep(1 * time.Second)
+			}
 		}
 	} else {
 		fmt.Println("送风请求失败：", response.Message)

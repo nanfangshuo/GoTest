@@ -66,10 +66,10 @@ func main() {
 			var temp float64
 			fmt.Print("请输入新的温度：")
 			fmt.Scanln(&temp)
-			if temp < room.Temperature && room.WorkStatus == "cold" {
+			if temp < room.Temperature && room.WorkStatus == "Cool" {
 				room.TargetTemperature = temp
 				Room.StartWind(room)
-			} else if temp > room.Temperature && room.WorkStatus == "warm" {
+			} else if temp > room.Temperature && room.WorkStatus == "Warm" {
 				room.TargetTemperature = temp
 				Room.StartWind(room)
 			} else {

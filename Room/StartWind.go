@@ -60,20 +60,21 @@ func StartWind(room *Room) error {
 				flag = -1
 			}
 			var degreeLevel float64
-			switch room.WindSpeed {
-			case "low":
-				degreeLevel = 0.5 * flag
-				break
-			case "medium":
-				degreeLevel = 1 * flag
-				break
-			case "high":
-				degreeLevel = 1.5
-				break
-			}
 			diff := (target - room.Temperature) * flag
 			//循环获取请求状态（间隔1秒），当请求状态为Done时：stop <- true，停止送风
 			for state0 == "Doing" && diff > 1 {
+				switch room.WindSpeed {
+				case "low":
+					degreeLevel = 0.5 * flag
+					break
+				case "medium":
+					degreeLevel = 1 * flag
+					break
+				case "high":
+					degreeLevel = 1.5
+					break
+				}
+				diff = (target - room.Temperature) * flag
 				room.Temperature += degreeLevel
 				err, state0 = GetRequestState()
 				if err != nil {

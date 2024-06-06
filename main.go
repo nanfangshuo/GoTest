@@ -23,12 +23,26 @@ func main() {
 		for {
 			select {
 			case <-ticker.C:
-				// 这里调用ReportStatus函数，你需要提供适当的参数
+				// 这里调用ReportStatus函数
 				err := Room.ReportStatus(room.WorkStatus, room.Temperature)
 				if err != nil {
 					// 处理错误
 					fmt.Println("ReportStatus error:", err)
 				}
+			case <-quit:
+				return
+			}
+		}
+	}()
+	//开启一个线程，每秒检查温度是否需要发起请求
+	// 开启一个新的 goroutine，每秒执行一次 CheckTemperature
+	go func() {
+		ticker := time.NewTicker(1 * time.Second)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ticker.C:
+				Room.CheckTemperature(room)
 			case <-quit:
 				return
 			}
@@ -66,12 +80,8 @@ func main() {
 			var temp float64
 			fmt.Print("请输入新的温度：")
 			fmt.Scanln(&temp)
-			if temp < room.Temperature && room.WorkStatus == "Cool" {
+			if (temp < room.Temperature && room.WorkStatus == "Cool") || (temp > room.Temperature && room.WorkStatus == "Warm") {
 				room.TargetTemperature = temp
-				Room.StartWind(room)
-			} else if temp > room.Temperature && room.WorkStatus == "Warm" {
-				room.TargetTemperature = temp
-				Room.StartWind(room)
 			} else {
 				fmt.Println("该温度和当前空调工作模式矛盾，设置温度失败！")
 			}
@@ -82,7 +92,6 @@ func main() {
 			fmt.Print("请输入新的风速（low/medium/high）：")
 			fmt.Scanln(&speed)
 			room.WindSpeed = speed
-			Room.StartWind(room)
 			break
 		}
 	}

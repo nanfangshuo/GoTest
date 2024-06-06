@@ -28,11 +28,10 @@ func NewRoom(roomId string, mode string, targetTemperature float64) *Room {
 func CheckTemperature(room *Room) {
 	//检查温度是否需要发起请求
 	diff := room.Temperature - room.TargetTemperature
-	if room.WorkStatus == "Warm" && diff < -1 {
-		//向服务器请求加热
-		StartWind(room)
-	} else if room.WorkStatus == "Cool" && diff > 1 {
-		//向服务器请求制冷
-		StartWind(room)
+	if (room.WorkStatus == "Warm" && diff < -1) || (room.WorkStatus == "Cool" && diff > 1) {
+		//向服务器请求送风
+		go func() {
+			StartWind(room)
+		}()
 	}
 }

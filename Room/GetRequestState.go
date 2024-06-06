@@ -21,19 +21,15 @@ type getRequestStateResponse struct {
 func GetRequestState() (error, string) {
 	var requestBody getRequestStateRequestBody
 	var response getRequestStateResponse
-	err, responseStatus := HttpRequest.SendPostRequestWithToken("/room/poll/request", requestBody, &response)
-	if err != nil {
-		fmt.Println("获取请求状态错误：", err)
-		return err, ""
-	}
+	_, responseStatus := HttpRequest.SendPostRequestWithToken("/room/poll/request", requestBody, &response)
 	if responseStatus == 200 {
 		fmt.Println("获取请求状态成功")
-
 		return nil, response.Data.RequestStatus
 		//TODO:对于两种状态的处理（Doing Pending Done）
 
 	} else {
-		fmt.Println("获取请求状态失败：", response.Message)
+		fmt.Println("获取请求状态失败：", response.Message, "错误码", responseStatus)
+
 	}
 	return nil, ""
 }

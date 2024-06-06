@@ -35,7 +35,7 @@ func SendPostRequestWithToken(api string, requestBody interface{}, responseBody 
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("请求失败，状态码：%d", resp.StatusCode), -1
+		return fmt.Errorf("请求失败，状态码：%d", resp.StatusCode, "message:"), -1
 	}
 
 	if err := json.NewDecoder(resp.Body).Decode(responseBody); err != nil {

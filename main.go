@@ -103,5 +103,5 @@ end: //退出循环的标记
 	} else {
 		fmt.Println("Logout success")
 	}
-	close(quit) // 注销后关闭quit通道，使得goroutine停止运行
+	close(quit) // 注销后关闭quit通道，使得goroutine停止运
 }

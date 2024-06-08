@@ -18,7 +18,7 @@ func main() {
 	// 开启一个线程，每10/RefreshSpeed秒向主控机汇报从控机的状态
 	quit := make(chan struct{})
 	go func() {
-		ticker := time.NewTicker(10 * time.Second / time.Duration(RefreshSpeed))
+		ticker := time.NewTicker(4 * time.Second / time.Duration(RefreshSpeed))
 		defer ticker.Stop()
 		for {
 			select {

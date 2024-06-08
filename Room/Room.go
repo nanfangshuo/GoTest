@@ -30,8 +30,6 @@ func CheckTemperature(room *Room) {
 	diff := room.Temperature - room.TargetTemperature
 	if (room.WorkStatus == "Warm" && diff < -1) || (room.WorkStatus == "Cool" && diff > 1) {
 		//向服务器请求送风
-		go func() {
-			StartWind(room)
-		}()
+		StartWind(room)
 	}
 }

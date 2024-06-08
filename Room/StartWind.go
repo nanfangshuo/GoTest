@@ -19,7 +19,7 @@ type StartWindResponse struct {
 
 func StartWind(room *Room) error {
 	//首先，确保上一个请求已暂停（这非常重要！！）
-	StopWind()
+	// StopWind()
 	//发送送风请求
 	requestBody := StartWindRequestBody{
 		FanSpeed:   room.WindSpeed,
@@ -82,7 +82,9 @@ func StartWind(room *Room) error {
 					break
 				}
 				time.Sleep(1 * time.Second)
+				
 			}
+			StopWind()
 		}
 	} else {
 		fmt.Println("送风请求失败：", response.Message)

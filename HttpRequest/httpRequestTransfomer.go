@@ -8,7 +8,8 @@ import (
 	"net/http"
 )
 
-const BaseURL = "http://82.156.104.168:80"
+const ServerURL = "http://82.156.104.168:80"
+const LocalURL = "http://localhost:8080"
 
 var Token string
 
@@ -20,7 +21,7 @@ func SendPostRequestWithToken(api string, requestBody interface{}, responseBody 
 		return fmt.Errorf("将请求体转换为JSON错误：%v", err), -1
 	}
 
-	req, err := http.NewRequest("POST", BaseURL+api, bytes.NewBuffer(jsonData))
+	req, err := http.NewRequest("POST", LocalURL+api, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return fmt.Errorf("构造请求错误：%v", err), -1
 	}
@@ -35,7 +36,7 @@ func SendPostRequestWithToken(api string, requestBody interface{}, responseBody 
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("请求失败，状态码：%d", resp.StatusCode, "message:"), -1
+		return fmt.Errorf("请求失败，状态码：%d", resp.StatusCode), -1
 	}
 
 	if err := json.NewDecoder(resp.Body).Decode(responseBody); err != nil {
@@ -51,7 +52,7 @@ func SendPostRequestWithoutToken(api string, requestBody interface{}, responseBo
 		return fmt.Errorf("将请求体转换为JSON错误：%v", err), -1
 	}
 
-	req, err := http.NewRequest("POST", BaseURL+api, bytes.NewBuffer(jsonData))
+	req, err := http.NewRequest("POST", LocalURL+api, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return fmt.Errorf("构造请求错误：%v", err), -1
 	}

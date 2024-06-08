@@ -21,13 +21,13 @@ func ReportStatus(status string, temperature float64) error {
 		Temperature: temperature,
 	}
 	var response ReportStatusResponse
-	err, responseStatus := HttpRequest.SendPostRequestWithToken("/room/poll/request", requestBody, &response)
+	err, responseStatus := HttpRequest.SendPostRequestWithToken("/room/poll/room_status", requestBody, &response)
 	if err != nil {
 		fmt.Println("上报状态请求发送错误：", err)
 		return err
 	}
 	if responseStatus == 200 {
-		fmt.Println("上报状态请求成功")
+		fmt.Printf("上报状态请求成功, 温度:%.1f, 状态:%s\n", temperature, status)
 		//TODO：上报状态成功后的操作
 	} else {
 		fmt.Println("上报状态请求失败：", response.Message)

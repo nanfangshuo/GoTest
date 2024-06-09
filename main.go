@@ -33,6 +33,7 @@ func main() {
 				} else {
 					if workStatus != room.WorkStatus {
 						Room.StopWind()
+						room.WorkStatus = workStatus
 						RefreshSpeed = 0
 					}
 					if refreshSpeed != RefreshSpeed {

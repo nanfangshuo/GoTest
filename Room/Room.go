@@ -15,11 +15,10 @@ type Room struct {
 
 func NewRoom(roomId string, mode string, targetTemperature float64) *Room {
 	//新建房间时检查温度是否需要发起请求
-	x := 28.0
 	return &Room{
 		RoomId:            roomId,
 		WorkStatus:        mode,
-		Temperature:       x, // TODO:可能要改为从服务器获取当前温度，这里先写死
+		Temperature:       20,
 		TargetTemperature: targetTemperature,
 		WindSpeed:         "low",
 	}

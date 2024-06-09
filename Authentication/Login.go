@@ -60,6 +60,6 @@ func Login() *Room.Room {
 		}
 	}
 	fmt.Println("登录成功")
-	Room.CheckTemperature(room)
+	//Room.CheckTemperature(room)
 	return room
 }

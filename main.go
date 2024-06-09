@@ -15,34 +15,42 @@ func main() {
 	var room = Authentication.Login()
 	fmt.Println(room)
 
-	// 开启一个线程，每10/RefreshSpeed秒向主控机汇报从控机的状态
+	// 开启一个线程，每4/RefreshSpeed秒向主控机汇报从控机的状态，每秒检查温度是否需要发起请求
 	quit := make(chan struct{})
 	go func() {
-		ticker := time.NewTicker(4 * time.Second / time.Duration(RefreshSpeed))
-		defer ticker.Stop()
+		ticker1 := time.NewTicker(6 * time.Second / time.Duration(RefreshSpeed))
+		ticker2 := time.NewTicker(1 * time.Second)
+		defer ticker1.Stop()
+		defer ticker2.Stop()
 		for {
 			select {
-			case <-ticker.C:
+			case <-ticker1.C: //每6/RefreshSpeed秒一次
 				// 这里调用ReportStatus函数
-				err := Room.ReportStatus(room.WorkStatus, room.Temperature)
+				err, workStatus, refreshSpeed := Room.ReportStatus(room.WorkStatus, room.Temperature)
 				if err != nil {
 					// 处理错误
 					fmt.Println("ReportStatus error:", err)
+				} else {
+					if workStatus != room.WorkStatus {
+						Room.StopWind()
+						RefreshSpeed = 0
+					}
+					if refreshSpeed != RefreshSpeed {
+						RefreshSpeed = refreshSpeed
+						ticker1.Stop()
+						ticker1 = time.NewTicker(6 * time.Second / time.Duration(RefreshSpeed))
+					}
 				}
-			case <-quit:
-				return
-			}
-		}
-	}()
-	//开启一个线程，每秒检查温度是否需要发起请求
-	// 开启一个新的 goroutine，每秒执行一次 CheckTemperature
-	go func() {
-		ticker := time.NewTicker(1 * time.Second)
-		defer ticker.Stop()
-		for {
-			select {
-			case <-ticker.C:
+			case <-ticker2.C: //每秒一次
 				Room.CheckTemperature(room)
+				if room.Temperature > 20.2 {
+					room.Temperature -= 0.2
+				} else if room.Temperature < 19.8 {
+					room.Temperature += 0.2
+				} else {
+					room.Temperature = 20
+				}
+				fmt.Printf("当前温度：%.1f\n", room.Temperature)
 			case <-quit:
 				return
 			}

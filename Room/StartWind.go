@@ -53,36 +53,35 @@ func StartWind(room *Room) error {
 		} else if state0 == "Doing" {
 			//若此时请求状态为Doing，则开始送风；同时监听请求状态，当请求状态为Done时，停止送风
 			target := room.TargetTemperature
-			var flag float64
-			if room.WorkStatus == "Warm" {
-				flag = 1
-			} else {
-				flag = -1
-			}
 			var degreeLevel float64
-			diff := (target - room.Temperature) * flag
 			//循环获取请求状态（间隔1秒），当请求状态为Done时：stop <- true，停止送风
-			for state0 == "Doing" && diff > 1 {
-				switch room.WindSpeed {
-				case "low":
-					degreeLevel = 0.5 * flag
-					break
-				case "medium":
-					degreeLevel = 1 * flag
-					break
-				case "high":
-					degreeLevel = 1.5
+			for state0 == "Doing" {
+				diff := target - room.Temperature
+				if diff < 1 {
 					break
 				}
-				diff = (target - room.Temperature) * flag
-				room.Temperature += degreeLevel
+				switch room.WindSpeed {
+				case "low":
+					degreeLevel = 0.5
+				case "medium":
+					degreeLevel = 1
+				case "high":
+					degreeLevel = 1.5
+				}
+				var x float64
+				if diff > 0 {
+					x = degreeLevel
+				} else {
+					x = degreeLevel * (-1)
+				}
+				room.Temperature += x
 				err, state0 = GetRequestState()
 				if err != nil {
 					fmt.Println("获取请求状态时发生错误，结束循环：", err)
 					break
 				}
 				time.Sleep(1 * time.Second)
-				
+
 			}
 			StopWind()
 		}

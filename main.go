@@ -24,25 +24,31 @@ func main() {
 		defer ticker2.Stop()
 		for {
 			select {
-			case <-ticker1.C: //每6/RefreshSpeed秒一次
-				// 这里调用ReportStatus函数
+			case <-ticker1.C: //每6/RefreshSpeed秒一次,汇报从控机温度并获取从控机费用、主控机模式、刷新速率
+				// 调用ReportStatus函数
 				err, workStatus, refreshSpeed := Room.ReportStatus(room.WorkStatus, room.Temperature)
 				if err != nil {
 					// 处理错误
 					fmt.Println("ReportStatus error:", err)
 				} else {
+					//若工作模式改变
 					if workStatus != room.WorkStatus {
 						Room.StopWind()
 						room.WorkStatus = workStatus
-						RefreshSpeed = 0
+						if room.WorkStatus == "Cool" {
+							room.TargetTemperature = 22
+						} else {
+							room.TargetTemperature = 28
+						}
 					}
+					//若刷新速率改变
 					if refreshSpeed != RefreshSpeed {
 						RefreshSpeed = refreshSpeed
 						ticker1.Stop()
 						ticker1 = time.NewTicker(6 * time.Second / time.Duration(RefreshSpeed))
 					}
 				}
-			case <-ticker2.C: //每秒一次
+			case <-ticker2.C: //每秒一次，检查温度是否需要发起请求，闲时以每秒0.2度的速度回归20度
 				Room.CheckTemperature(room)
 				if room.Temperature > 20.2 {
 					room.Temperature -= 0.2
@@ -51,7 +57,6 @@ func main() {
 				} else {
 					room.Temperature = 20
 				}
-				fmt.Printf("当前温度：%.1f\n", room.Temperature)
 			case <-quit:
 				return
 			}
@@ -89,7 +94,7 @@ func main() {
 			var temp float64
 			fmt.Print("请输入新的温度：")
 			fmt.Scanln(&temp)
-			if (temp < room.Temperature && room.WorkStatus == "Cool") || (temp > room.Temperature && room.WorkStatus == "Warm") {
+			if (room.WorkStatus == "Cool" && temp >= 18 && temp <= 25) || (room.WorkStatus == "Warm" && temp >= 25 && temp <= 30) {
 				room.TargetTemperature = temp
 			} else {
 				fmt.Println("该温度和当前空调工作模式矛盾，设置温度失败！")

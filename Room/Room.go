@@ -1,5 +1,10 @@
 package Room
 
+import (
+	"fmt"
+	"math"
+)
+
 type Room struct {
 	// 房间号
 	RoomId string
@@ -27,8 +32,9 @@ func NewRoom(roomId string, mode string, targetTemperature float64) *Room {
 func CheckTemperature(room *Room) {
 	//检查温度是否需要发起请求
 	diff := room.Temperature - room.TargetTemperature
-	if (room.WorkStatus == "Warm" && diff < -1) || (room.WorkStatus == "Cool" && diff > 1) {
+	if math.Abs(diff) > 1 {
 		//向服务器请求送风
+		fmt.Printf("当前温度为%.1f，目标温度为%.1f，温度差大于1，请求送风", room.Temperature, room.TargetTemperature)
 		StartWind(room)
 	}
 }

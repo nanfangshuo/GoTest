@@ -3,6 +3,7 @@ package Room
 import (
 	"GoTest/HttpRequest"
 	"fmt"
+	"math"
 	"time"
 )
 
@@ -57,16 +58,16 @@ func StartWind(room *Room) error {
 			//循环获取请求状态（间隔1秒），当请求状态为Done时：stop <- true，停止送风
 			for state0 == "Doing" {
 				diff := target - room.Temperature
-				if diff < 1 {
+				if math.Abs(diff) < 0.8 {
 					break
 				}
 				switch room.WindSpeed {
 				case "low":
-					degreeLevel = 0.5
+					degreeLevel = 0.2
 				case "medium":
-					degreeLevel = 1
+					degreeLevel = 0.4
 				case "high":
-					degreeLevel = 1.5
+					degreeLevel = 0.8
 				}
 				var x float64
 				if diff > 0 {

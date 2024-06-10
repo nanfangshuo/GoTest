@@ -50,10 +50,10 @@ func main() {
 				}
 			case <-ticker2.C: //每秒一次，检查温度是否需要发起请求，闲时以每秒0.2度的速度回归20度
 				Room.CheckTemperature(room)
-				if room.Temperature > 20.2 {
-					room.Temperature -= 0.2
-				} else if room.Temperature < 19.8 {
-					room.Temperature += 0.2
+				if room.Temperature > 20.05 {
+					room.Temperature -= 0.05
+				} else if room.Temperature < 19.95 {
+					room.Temperature += 0.05
 				} else {
 					room.Temperature = 20
 				}

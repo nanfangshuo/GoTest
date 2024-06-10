@@ -23,10 +23,8 @@ func GetRequestState() (error, string) {
 	var response getRequestStateResponse
 	_, responseStatus := HttpRequest.SendPostRequestWithToken("/room/poll/request", requestBody, &response)
 	if responseStatus == 200 {
-		fmt.Println("获取请求状态成功")
+		fmt.Println("获取请求状态成功, 请求状态为：", response.Data.RequestStatus)
 		return nil, response.Data.RequestStatus
-		//TODO:对于两种状态的处理（Doing Pending Done）
-
 	} else {
 		fmt.Println("获取请求状态失败：", response.Message, "错误码", responseStatus)
 

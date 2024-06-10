@@ -18,7 +18,7 @@ func main() {
 	// 开启一个线程，每4/RefreshSpeed秒向主控机汇报从控机的状态，每秒检查温度是否需要发起请求
 	quit := make(chan struct{})
 	go func() {
-		ticker1 := time.NewTicker(6 * time.Second / time.Duration(RefreshSpeed))
+		ticker1 := time.NewTicker(3 * time.Second / time.Duration(RefreshSpeed))
 		ticker2 := time.NewTicker(1 * time.Second)
 		defer ticker1.Stop()
 		defer ticker2.Stop()
@@ -45,7 +45,7 @@ func main() {
 					if refreshSpeed != RefreshSpeed {
 						RefreshSpeed = refreshSpeed
 						ticker1.Stop()
-						ticker1 = time.NewTicker(6 * time.Second / time.Duration(RefreshSpeed))
+						ticker1 = time.NewTicker(3 * time.Second / time.Duration(RefreshSpeed))
 					}
 				}
 			case <-ticker2.C: //每秒一次，检查温度是否需要发起请求，闲时以每秒0.2度的速度回归20度

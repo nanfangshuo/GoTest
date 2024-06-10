@@ -48,7 +48,7 @@ func main() {
 						ticker1 = time.NewTicker(3 * time.Second / time.Duration(RefreshSpeed))
 					}
 				}
-			case <-ticker2.C: //每秒一次，检查温度是否需要发起请求，闲时以每秒0.2度的速度回归20度
+			case <-ticker2.C: //每秒一次，检查温度是否需要发起请求，闲时以每秒0.2度的速度回归20
 				Room.CheckTemperature(room)
 				if room.Temperature > 20.05 {
 					room.Temperature -= 0.05

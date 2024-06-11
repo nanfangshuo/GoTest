@@ -2,79 +2,174 @@ package main
 
 import (
 	"GoTest/Authentication"
-	"GoTest/GetBills"
 	"GoTest/Room"
 	"fmt"
+	"strconv"
 	"time"
+
+	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/app"
+	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/data/binding"
+	"fyne.io/fyne/v2/dialog"
+	"fyne.io/fyne/v2/layout"
+	"fyne.io/fyne/v2/theme"
+	"fyne.io/fyne/v2/widget"
 )
 
 var RefreshSpeed = 1
+var room *Room.Room
+var uiUpdate chan func()
+
+// 定义绑定变量
+var roomId binding.String
+var temperature binding.Float
+var targetTemperature binding.Float
+var windSpeed binding.String
+var workStatus binding.String
 
 func main() {
-	// 创建一个新的房间
-	var room = Authentication.Login()
-	fmt.Println(room)
+	// 初始化Fyne应用和窗口
+	a := app.New()
+	w := a.NewWindow("Air Conditioner Controller")
 
-	// 开启一个线程，每4/RefreshSpeed秒向主控机汇报从控机的状态，每秒检查温度是否需要发起请求
-	quit := make(chan struct{})
-	go reportStatusPeriodically(room, quit)
-	go checkTemperaturePeriodically(room, quit)
-	for {
-		fmt.Println("输入0注销")
-		fmt.Println("输入1查看房间当前状态")
-		fmt.Println("输入2获取报表")
-		fmt.Println("输入3更改空调温度")
-		fmt.Println("输入4更改空调风速")
-		var x int
-		fmt.Print("请输入需要的功能：")
-		fmt.Scanln(&x)
-		switch x {
-		case 0:
-			//注销
-			goto end
-		case 1:
-			//查看房间当前状态
-			fmt.Print("当前温度：", room.Temperature, "°C\n")
-			fmt.Print("目标温度：", room.TargetTemperature, "°C\n")
-			fmt.Print("风速：", room.WindSpeed, "\n")
-			fmt.Print("空调工作状态：", room.WorkStatus, "\n")
-			break
-		case 2:
-			//获取并打印报表
-			var period string
-			fmt.Print("请输入查询周期（daily/weekly/monthly）：")
-			fmt.Scanln(&period)
-			GetBills.GetBills(period)
-			break
-		case 3:
-			//更改空调温度
-			var temp float64
-			fmt.Print("请输入新的温度：")
-			fmt.Scanln(&temp)
-			if (room.WorkStatus == "Cool" && temp >= 18 && temp <= 25) || (room.WorkStatus == "Warm" && temp >= 25 && temp <= 30) {
-				room.TargetTemperature = temp
-			} else {
-				fmt.Println("该温度和当前空调工作模式矛盾，设置温度失败！")
-			}
-			break
-		case 4:
-			//更改空调风速度
-			var speed string
-			fmt.Print("请输入新的风速（low/medium/high）：")
-			fmt.Scanln(&speed)
-			room.WindSpeed = speed
-			break
+	// 初始化UI更新通道
+	uiUpdate = make(chan func())
+
+	// 设置登录界面为初始内容
+	loginScreen := buildLoginScreen(w)
+	w.SetContent(loginScreen)
+	w.Resize(fyne.NewSize(600, 400))
+
+	// 开启一个goroutine用于处理UI更新
+	go func() {
+		for update := range uiUpdate {
+			update()
 		}
-	}
-end: //退出循环的标记
-	//注销
-	err := Authentication.Logout()
-	if err != nil {
-		fmt.Println("Logout error:", err)
-	} else {
-		fmt.Println("Logout success")
-	}
-	close(quit) // 注销后关闭quit通道，使得goroutine停止运
+	}()
+
+	// 显示窗口并运行事件循环
+	w.ShowAndRun()
+}
+
+func buildLoginScreen(w fyne.Window) fyne.CanvasObject {
+	roomIdEntry := widget.NewEntry()
+	roomIdEntry.SetPlaceHolder("Enter Room ID")
+
+	identityEntry := widget.NewEntry()
+	identityEntry.SetPlaceHolder("Enter Identity")
+
+	loginButton := widget.NewButton("Login", func() {
+		// 假设 Authentication.Login 函数返回一个 *Room.Room
+		room = Authentication.Login(roomIdEntry.Text, identityEntry.Text)
+		if room != nil {
+			// 初始化绑定变量
+			roomId = binding.BindString(&room.RoomId)
+			temperature = binding.BindFloat(&room.Temperature)
+			targetTemperature = binding.BindFloat(&room.TargetTemperature)
+			windSpeed = binding.BindString(&room.WindSpeed)
+			workStatus = binding.BindString(&room.WorkStatus)
+
+			uiUpdate <- func() {
+				w.SetContent(buildMainScreen(w))
+			}
+			quit := make(chan struct{})
+			go reportStatusPeriodically(room, quit)
+			go checkTemperaturePeriodically(room, quit)
+		} else {
+			uiUpdate <- func() {
+				dialog.ShowInformation("Login Failed", "Invalid Room ID or Identity", w)
+			}
+		}
+	})
+
+	loginForm := container.NewVBox(
+		widget.NewLabelWithStyle("Air Conditioner Login", fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
+		roomIdEntry,
+		identityEntry,
+		loginButton,
+	)
+
+	return container.NewCenter(container.NewVBox(
+		loginForm,
+	))
+}
+
+func buildMainScreen(w fyne.Window) fyne.CanvasObject {
+	roomIdLabel := widget.NewLabelWithData(roomId)
+	workStatusLabel := widget.NewLabelWithData(workStatus)
+	temperatureLabel := widget.NewLabelWithData(binding.FloatToStringWithFormat(temperature, "%.2f"))
+	windSpeedLabel := widget.NewLabelWithData(windSpeed)
+	targetTemperatureLabel := widget.NewLabelWithData(binding.FloatToStringWithFormat(targetTemperature, "%.2f"))
+
+	targetTempEntry := widget.NewEntry()
+	targetTempEntry.SetPlaceHolder("Enter Target Temperature")
+
+	setTempButton := widget.NewButton("Set", func() {
+		temp, err := strconv.ParseFloat(targetTempEntry.Text, 64)
+		if err == nil {
+			uiUpdate <- func() {
+				targetTemperature.Set(temp)
+			}
+		} else {
+			uiUpdate <- func() {
+				dialog.ShowError(err, w)
+			}
+		}
+	})
+	targetTempBox := container.NewHBox(widget.NewLabel("Set Target Temperature: "), container.New(layout.NewGridWrapLayout(fyne.NewSize(200, targetTempEntry.MinSize().Height)), targetTempEntry), setTempButton)
+
+	windSpeedSelect := widget.NewSelect([]string{"low", "medium", "high"}, func(value string) {
+		uiUpdate <- func() {
+			windSpeed.Set(value)
+		}
+	})
+	windSpeedBox := container.NewHBox(widget.NewLabel("Set Wind Speed: "), container.New(layout.NewGridWrapLayout(fyne.NewSize(200, windSpeedSelect.MinSize().Height)), windSpeedSelect))
+
+	// 静态数据部分
+	staticData := container.NewVBox(
+		widget.NewForm(
+			widget.NewFormItem("Room ID", roomIdLabel),
+			widget.NewFormItem("Work Status", workStatusLabel),
+			widget.NewFormItem("Wind Speed", windSpeedLabel),
+		),
+	)
+	staticDataBox := container.NewVBox(
+		widget.NewCard("", "", staticData),
+	)
+
+	// 动态数据部分
+	dynamicData := container.NewVBox(
+		widget.NewForm(
+			widget.NewFormItem("Current Temperature", temperatureLabel),
+			widget.NewFormItem("Target Temperature", targetTemperatureLabel),
+		),
+	)
+	dynamicDataBox := container.NewVBox(
+		widget.NewCard("", "", dynamicData),
+	)
+
+	logoutContainer := container.NewHBox(
+		layout.NewSpacer(),
+		widget.NewButtonWithIcon("", theme.LogoutIcon(), func() {
+			Authentication.Logout()
+			uiUpdate <- func() {
+				w.SetContent(buildLoginScreen(w))
+			}
+		}),
+	)
+
+	controlPanel := container.NewVBox(
+		targetTempBox,
+		windSpeedBox,
+	)
+
+	return container.NewBorder(nil, logoutContainer, nil, nil,
+		container.NewVBox(
+			staticDataBox,
+			dynamicDataBox,
+			controlPanel,
+		))
 }
 
 func reportStatusPeriodically(room *Room.Room, quit chan struct{}) {
@@ -83,23 +178,31 @@ func reportStatusPeriodically(room *Room.Room, quit chan struct{}) {
 	for {
 		select {
 		case <-ticker1.C:
-			err, workStatus, refreshSpeed := Room.ReportStatus(room.WorkStatus, room.Temperature)
+			err, workStatus_, refreshSpeed := Room.ReportStatus(room.WorkStatus, room.Temperature)
 			if err != nil {
 				fmt.Println("ReportStatus error:", err)
 			} else {
-				if workStatus != room.WorkStatus {
+				if workStatus_ != room.WorkStatus {
 					Room.StopWind()
-					room.WorkStatus = workStatus
+					room.WorkStatus = workStatus_
 					if room.WorkStatus == "Cool" {
 						room.TargetTemperature = 22
 					} else {
 						room.TargetTemperature = 28
+					}
+					uiUpdate <- func() {
+						targetTemperature.Set(room.TargetTemperature)
 					}
 				}
 				if refreshSpeed != RefreshSpeed {
 					RefreshSpeed = refreshSpeed
 					ticker1.Stop()
 					ticker1 = time.NewTicker(3 * time.Second / time.Duration(RefreshSpeed))
+				}
+				// 在主线程中更新UI
+				uiUpdate <- func() {
+					temperature.Set(room.Temperature)
+					windSpeed.Set(room.WindSpeed)
 				}
 			}
 		case <-quit:
@@ -121,6 +224,10 @@ func checkTemperaturePeriodically(room *Room.Room, quit chan struct{}) {
 				room.Temperature += 0.05
 			} else {
 				room.Temperature = 20
+			}
+			uiUpdate <- func() {
+				temperature.Set(room.Temperature)
+				windSpeed.Set(room.WindSpeed)
 			}
 		case <-quit:
 			return

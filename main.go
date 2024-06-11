@@ -77,7 +77,7 @@ end: //退出循环的标记
 	close(quit) // 注销后关闭quit通道，使得goroutine停止运
 }
 
-func reportStatusPeriodically(room *Room, quit chan struct{}) {
+func reportStatusPeriodically(room *Room.Room, quit chan struct{}) {
 	ticker1 := time.NewTicker(3 * time.Second / time.Duration(RefreshSpeed))
 	defer ticker1.Stop()
 	for {
@@ -108,7 +108,7 @@ func reportStatusPeriodically(room *Room, quit chan struct{}) {
 	}
 }
 
-func checkTemperaturePeriodically(room *Room, quit chan struct{}) {
+func checkTemperaturePeriodically(room *Room.Room, quit chan struct{}) {
 	ticker2 := time.NewTicker(1 * time.Second)
 	defer ticker2.Stop()
 	for {

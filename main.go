@@ -58,7 +58,7 @@ func main() {
 			}
 			break
 		case 4:
-			//更改空调风速
+			//更改空调风速度
 			var speed string
 			fmt.Print("请输入新的风速（low/medium/high）：")
 			fmt.Scanln(&speed)
